@@ -1,0 +1,173 @@
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+.controls {
+  margin-bottom: 20px;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+
+button:hover {
+  border-color: #646cff;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Stable grid layout with gap */
+/* Better approach for 3x3 borders using CSS Grid gap tricks or direct borders */
+#sudoku-board {
+  display: grid;
+  grid-template-columns: repeat(9, 40px);
+  grid-template-rows: repeat(9, 40px);
+  gap: 0;
+  /* Outer borders for the container - full frame */
+  border: 2px solid #555;
+  /* Use box-sizing to handle borders correctly */
+  box-sizing: border-box;
+  /* Centering logic */
+  width: fit-content;
+  margin: 0 auto;
+}
+
+.cell {
+  width: 40px;
+  height: 40px;
+  background-color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2em;
+  color: white;
+  user-select: none;
+  /* Standard cell borders: right and bottom only */
+  border-right: 1px solid #444;
+  border-bottom: 1px solid #444;
+  /* Reset top/left */
+  border-top: none;
+  border-left: none;
+  box-sizing: border-box;
+}
+
+.cell input {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  text-align: center;
+  font-size: 1.2em;
+  color: #646cff;
+  font-weight: bold;
+}
+
+.cell input:focus {
+  outline: none;
+  background-color: #333;
+}
+
+/* Thick borders for 3x3 blocks */
+/* Using JS classes logic from main.js */
+
+/* Vertical borders override */
+#sudoku-board .cell.border-right {
+  border-right: 3px solid #fff;
+  z-index: 10;
+}
+
+/* Horizontal borders override */
+#sudoku-board .cell.border-bottom {
+  border-bottom: 3px solid #fff;
+  z-index: 10;
+}
+
+/* Remove right border for last column */
+.cell:nth-child(9n) {
+  border-right: none;
+}
+
+/* Remove bottom border for last row (indices 73-81) */
+.cell:nth-child(n+73) {
+  border-bottom: none;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+
+  a:hover {
+    color: #747bff;
+  }
+
+  button {
+    background-color: #f9f9f9;
+  }
+
+  .cell {
+    background-color: #fff;
+    color: #213547;
+    border-color: #ddd;
+  }
+
+  .cell input {
+    color: #646cff;
+  }
+
+  .cell input:focus {
+    background-color: #eee;
+  }
+
+  #sudoku-board {
+    border-color: #333;
+  }
+
+  #sudoku-board .cell.border-bottom,
+  #sudoku-board .cell.border-right {
+    border-color: #000;
+  }
+}
