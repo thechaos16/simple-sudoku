@@ -91,22 +91,52 @@ button:focus-visible {
   border-top: none;
   border-left: none;
   box-sizing: border-box;
+  cursor: pointer;
 }
 
-.cell input {
-  width: 100%;
-  height: 100%;
-  background: transparent;
-  border: none;
-  text-align: center;
-  font-size: 1.2em;
+.cell.selected {
+  background-color: #333;
+  outline: 2px solid #646cff;
+  z-index: 20;
+  /* Ensure outline is on top */
+}
+
+/* User filled numbers style */
+.cell:not(.given) {
   color: #646cff;
   font-weight: bold;
 }
 
-.cell input:focus {
-  outline: none;
+/* Numpad Styles */
+.numpad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  max-width: 360px;
+  /* Match board width roughly */
+  margin: 20px auto 0;
+  padding: 0 10px;
+}
+
+.num-btn {
+  height: 50px;
+  font-size: 1.5em;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.action-btn {
   background-color: #333;
+  color: #ff6b6b;
+  border-color: #555;
+}
+
+.action-btn:hover {
+  background-color: #444;
+  border-color: #ff4d4d;
 }
 
 /* Thick borders for 3x3 blocks */
@@ -154,12 +184,13 @@ button:focus-visible {
     border-color: #ddd;
   }
 
-  .cell input {
-    color: #646cff;
+  .cell.selected {
+    background-color: #eee;
+    outline-color: #646cff;
   }
 
-  .cell input:focus {
-    background-color: #eee;
+  .cell:not(.given) {
+    color: #646cff;
   }
 
   #sudoku-board {

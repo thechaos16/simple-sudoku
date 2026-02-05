@@ -9,12 +9,15 @@ const difficultySelect = document.querySelector('#difficulty');
 generateBtn.addEventListener('click', startNewGame);
 
 
+// State
 let currentSolution = [];
+let selectedCell = null;
 
 function startNewGame() {
   const difficulty = parseInt(difficultySelect.value);
   const { puzzle, solution } = generator.generatePuzzle(difficulty);
   currentSolution = solution;
+  selectedCell = null; // Reset selection
   renderBoard(puzzle);
 }
 
@@ -29,18 +32,14 @@ function checkWin() {
     const col = i % 9;
 
     let value;
-    if (cell.classList.contains('given')) {
+    if (cell.textContent) {
       value = parseInt(cell.textContent);
     } else {
-      const input = cell.querySelector('input');
-      if (input.value) {
-        value = parseInt(input.value);
-      } else {
-        isFull = false;
-        // Continue to check other cells if we want validation state, but for game end, full is required.
-      }
+      isFull = false;
+      // Continue to check correctness of filled cells
     }
 
+    // Only check correctness if there is a value
     if (value && value !== currentSolution[row][col]) {
       isCorrect = false;
     }
@@ -78,22 +77,49 @@ function renderBoard(puzzle) {
         cell.textContent = num;
         cell.classList.add('given'); // Mark as part of the puzzle (not user input)
       } else {
-        const input = document.createElement('input');
-        input.type = 'text'; // using text to allow clearing easily, or number
-        input.maxLength = 1;
-        input.addEventListener('input', (e) => {
-          const val = e.target.value;
-          if (!/^[1-9]$/.test(val)) {
-            e.target.value = '';
+        // Make cell clickable for selection
+        cell.addEventListener('click', () => {
+          if (selectedCell) {
+            selectedCell.classList.remove('selected');
           }
-          checkWin();
+          selectedCell = cell;
+          cell.classList.add('selected');
         });
-        cell.appendChild(input);
       }
       boardElement.appendChild(cell);
     });
   });
 }
+
+// Global Input Handling (Numpad buttons)
+document.querySelectorAll('.num-btn').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    if (!selectedCell) return;
+
+    // Check if it's a clear button or number
+    const value = e.target.getAttribute('data-value');
+    if (value === 'clear') {
+      selectedCell.textContent = '';
+    } else {
+      selectedCell.textContent = value;
+    }
+    checkWin();
+  });
+});
+
+// Global Keyboard Handling
+document.addEventListener('keydown', (e) => {
+  if (!selectedCell) return;
+
+  const key = e.key;
+  if (/^[1-9]$/.test(key)) {
+    selectedCell.textContent = key;
+    checkWin();
+  } else if (key === 'Backspace' || key === 'Delete') {
+    selectedCell.textContent = '';
+    checkWin();
+  }
+});
 
 // Start a game immediately
 startNewGame();
