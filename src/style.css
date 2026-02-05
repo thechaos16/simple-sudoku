@@ -35,6 +35,19 @@ h1 {
 
 .controls {
   margin-bottom: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+#timer {
+  font-family: monospace;
+  font-size: 1.5em;
+  font-weight: bold;
+  min-width: 80px;
+  color: #646cff;
+  /* Match theme color */
 }
 
 button {

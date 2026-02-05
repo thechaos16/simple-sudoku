@@ -13,12 +13,41 @@ generateBtn.addEventListener('click', startNewGame);
 let currentSolution = [];
 let selectedCell = null;
 
+// Timer State
+let startTime;
+let timerInterval;
+
+function startTimer() {
+  clearInterval(timerInterval);
+  startTime = Date.now();
+  const timerElement = document.getElementById('timer');
+
+  timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - startTime) / 1000);
+    timerElement.textContent = formatTime(elapsed);
+  }, 1000);
+
+  // Initialize immediately
+  timerElement.textContent = "00:00";
+}
+
+function stopTimer() {
+  clearInterval(timerInterval);
+}
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60).toString().padStart(2, '0');
+  const secs = (seconds % 60).toString().padStart(2, '0');
+  return `${mins}:${secs}`;
+}
+
 function startNewGame() {
   const difficulty = parseInt(difficultySelect.value);
   const { puzzle, solution } = generator.generatePuzzle(difficulty);
   currentSolution = solution;
   selectedCell = null; // Reset selection
   renderBoard(puzzle);
+  startTimer();
 }
 
 function checkWin() {
@@ -46,9 +75,11 @@ function checkWin() {
   }
 
   if (isFull && isCorrect) {
+    stopTimer();
+    const elapsedTime = document.getElementById('timer').textContent;
     // Small delay to let the UI update the last number
     setTimeout(() => {
-      alert('Congratulations! You solved the Sudoku!');
+      alert(`Congratulations! You solved the Sudoku in ${elapsedTime}!`);
     }, 100);
   } else if (isFull && !isCorrect) {
     setTimeout(() => {
