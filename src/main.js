@@ -6,29 +6,108 @@ const boardElement = document.querySelector('#sudoku-board');
 const generateBtn = document.querySelector('#generate-btn');
 const difficultySelect = document.querySelector('#difficulty');
 
-generateBtn.addEventListener('click', startNewGame);
+// Constants
+const STORAGE_KEY = 'simple_sudoku_save_v1';
+
+generateBtn.addEventListener('click', () => {
+  if (confirm('Start a new game? Current progress will be lost.')) {
+    localStorage.removeItem(STORAGE_KEY);
+    startNewGame();
+  }
+});
 
 
 // State
+let currentPuzzle = []; // The initial puzzle state
 let currentSolution = [];
 let selectedCell = null;
 
 // Timer State
 let startTime;
 let timerInterval;
+let accumulatedTime = 0; // Time from previous sessions
 
-function startTimer() {
+function saveGame() {
+  const userGrid = [];
+  const cells = document.querySelectorAll('.cell');
+
+  // Capture current board state (user inputs)
+  cells.forEach((cell, index) => {
+    // We only care about user inputs, not the given numbers (which are in currentPuzzle)
+    // But to be safe and simple, let's just save the full grid state as we see it
+    // Actually, distinct separation is better. Let's save the user inputs separately.
+    // Optimization: Just save the full 81 text values.
+    userGrid.push(cell.textContent || '');
+  });
+
+  // Calculate current elapsed time to save
+  const currentSessionTime = startTime ? Math.floor((Date.now() - startTime) / 1000) : 0;
+  const totalTime = accumulatedTime + currentSessionTime;
+
+  const gameState = {
+    puzzle: currentPuzzle,
+    solution: currentSolution,
+    userGrid: userGrid,
+    difficulty: difficultySelect.value,
+    elapsedTime: totalTime,
+    timestamp: Date.now()
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(gameState));
+}
+
+function loadGame() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (!saved) return false;
+
+  try {
+    const gameState = JSON.parse(saved);
+
+    // Restore state
+    currentPuzzle = gameState.puzzle;
+    currentSolution = gameState.solution;
+    accumulatedTime = gameState.elapsedTime || 0;
+    difficultySelect.value = gameState.difficulty;
+
+    // Render board with original puzzle
+    renderBoard(currentPuzzle);
+
+    // Apply saved user inputs
+    const cells = document.querySelectorAll('.cell');
+    gameState.userGrid.forEach((value, index) => {
+      if (value && cells[index] && !cells[index].classList.contains('given')) {
+        cells[index].textContent = value;
+      }
+    });
+
+    // Start timer with accumulated time
+    startTimer(true);
+
+    return true;
+  } catch (e) {
+    console.error('Failed to load game', e);
+    return false;
+  }
+}
+
+function startTimer(isResuming = false) {
   clearInterval(timerInterval);
   startTime = Date.now();
   const timerElement = document.getElementById('timer');
 
-  timerInterval = setInterval(() => {
-    const elapsed = Math.floor((Date.now() - startTime) / 1000);
-    timerElement.textContent = formatTime(elapsed);
-  }, 1000);
+  // If we are starting a fresh game, reset accumulated time
+  if (!isResuming) {
+    accumulatedTime = 0;
+  }
 
-  // Initialize immediately
-  timerElement.textContent = "00:00";
+  const updateTimer = () => {
+    const currentSessionTime = Math.floor((Date.now() - startTime) / 1000);
+    const totalTime = accumulatedTime + currentSessionTime;
+    timerElement.textContent = formatTime(totalTime);
+  };
+
+  timerInterval = setInterval(updateTimer, 1000);
+  updateTimer(); // Initial call
 }
 
 function stopTimer() {
@@ -44,10 +123,14 @@ function formatTime(seconds) {
 function startNewGame() {
   const difficulty = parseInt(difficultySelect.value);
   const { puzzle, solution } = generator.generatePuzzle(difficulty);
+
+  currentPuzzle = puzzle;
   currentSolution = solution;
   selectedCell = null; // Reset selection
+
   renderBoard(puzzle);
-  startTimer();
+  startTimer(false); // Start fresh timer
+  saveGame(); // Save initial state
 }
 
 function checkWin() {
@@ -77,14 +160,22 @@ function checkWin() {
   if (isFull && isCorrect) {
     stopTimer();
     const elapsedTime = document.getElementById('timer').textContent;
+    // Clear save on win
+    localStorage.removeItem(STORAGE_KEY);
+
     // Small delay to let the UI update the last number
     setTimeout(() => {
       alert(`Congratulations! You solved the Sudoku in ${elapsedTime}!`);
     }, 100);
-  } else if (isFull && !isCorrect) {
-    setTimeout(() => {
-      alert('Keep trying! Something is not quite right.');
-    }, 100);
+  } else {
+    // Save state for all other cases (in-progress or full-but-wrong)
+    saveGame();
+
+    if (isFull && !isCorrect) {
+      setTimeout(() => {
+        alert('Keep trying! Something is not quite right.');
+      }, 100);
+    }
   }
 }
 
@@ -152,5 +243,9 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Start a game immediately
-startNewGame();
+// Initialization Logic
+// Try to load saved game, otherwise start new
+if (!loadGame()) {
+  startNewGame();
+}
+

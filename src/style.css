@@ -177,6 +177,48 @@ button:focus-visible {
   border-bottom: none;
 }
 
+/* Responsive adjustments for mobile */
+@media (max-width: 600px) {
+  #app {
+    padding: 10px;
+    width: 100%;
+  }
+
+  h1 {
+    font-size: 2rem;
+  }
+
+  .controls {
+    gap: 10px;
+  }
+
+  #sudoku-board {
+    /* Responsive grid sizing: ensure it fits in viewport width minus padding */
+    grid-template-columns: repeat(9, min(40px, calc((100vw - 24px) / 9)));
+    grid-template-rows: repeat(9, min(40px, calc((100vw - 24px) / 9)));
+    /* Remove fixed width behavior if any */
+    width: fit-content;
+  }
+
+  .cell {
+    /* Allow cells to shrink */
+    width: auto;
+    height: auto;
+    font-size: clamp(0.8rem, 4vw, 1.2rem);
+  }
+
+  .numpad {
+    margin-top: 15px;
+    gap: 5px;
+    max-width: 100%;
+  }
+
+  .num-btn {
+    height: 42px;
+    font-size: 1.2em;
+  }
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
